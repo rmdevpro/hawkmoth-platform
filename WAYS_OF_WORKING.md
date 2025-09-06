@@ -20,8 +20,9 @@
 ## 🔄 **CHAT TRANSITION MANAGEMENT**
 
 ### **Session End Handoff Message Template**
-1. ✅ Update PROJECT_SUMMARY.md and CURRENT_PROJECT_STATUS.md
-2. ✅ Chat a transimission to the user with this simplified template:
+1. ✅ If any code changes were made during the session, role the version and push to GIT if not already done.
+2. ✅ Update PROJECT_SUMMARY.md and CURRENT_PROJECT_STATUS.md
+3. ✅ Chat a transimission to the user with this simplified template:
 
 ```
 🦅 HAWKMOTH Session Handoff - [Date]

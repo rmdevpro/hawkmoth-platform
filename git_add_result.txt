@@ -1,8 +1,0 @@
-warning: in the working copy of 'CURRENT_PROJECT_STATUS.md', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'PROJECT_SUMMARY.md', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'UPLOAD_TO_HF/version.json', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'WAYS_OF_WORKING.md', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'version.json', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'commit_and_push.bat', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'final_commit.txt', LF will be replaced by CRLF the next time Git touches it
-Git add exit code: 0 
