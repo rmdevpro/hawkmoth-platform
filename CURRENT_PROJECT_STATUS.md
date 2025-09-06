@@ -120,6 +120,28 @@ G:\Claud\HAWKMOTH-Project\
 
 ---
 
+---
+
+## 📋 **HAWKMOTH SESSION HANDOFF TEMPLATE**
+
+**For next session, use this handoff message:**
+
+```
+🦅 HAWKMOTH Session Handoff - [Date]
+
+⚠️ CRITICAL: READ G:\Claud\WAYS_OF_WORKING.md AND ASK USER PERMISSION BEFORE ANY FILE OPERATIONS
+
+📋 **STARTUP SEQUENCE:**
+1. Read G:\Claud\WAYS_OF_WORKING.md (session protocols - START HERE)
+2. Read PROJECT_SUMMARY.md (project overview)
+3. Read CURRENT_PROJECT_STATUS.md (active priorities)
+4. Continue where previous session left off
+
+**PROJECT LOCATION:** G:\Claud\HAWKMOTH-Project
+```
+
+---
+
 **Session Status:** SUCCESSFUL INFRASTRUCTURE SETUP ✅
 **Ready for:** Manual Git operations and repository backup
 **Risk Level:** MODERATE (reduced from HIGH)
