@@ -1,0 +1,29 @@
+# HAWKMOTH Git Metadata Backup
+# Generated for clean Git history recreation
+
+## CURRENT STATUS
+Current Branch: main
+Current Version: v0.0.4-enhanced
+
+## VERSION TAGS TO RECREATE:
+v0.0.1 - Component 1: Persistent Storage (3-Layer Hybrid System)
+v0.0.2 - Component 2: File Upload Handling (Multipart Pipeline)  
+v0.0.3 - Component 3: Claude File Integration (Live Image Analysis)
+v0.0.4-enhanced - Component 4: Enhanced Model Variety (10+ AI Models)
+
+## BRANCHES TO RECREATE:
+main - Primary development branch
+
+## CLEAN RECREATION COMMANDS:
+# After fresh git init and first push:
+git tag v0.0.1 -m "Component 1: Persistent Storage"
+git tag v0.0.2 -m "Component 2: File Upload Handling"
+git tag v0.0.3 -m "Component 3: Claude File Integration"
+git tag v0.0.4-enhanced -m "Component 4: Enhanced Model Variety"
+git push origin --tags
+
+## PROJECT MILESTONES:
+- HAWKMOTH Platform foundation
+- LLM Teaming implementation
+- Enhanced model variety with 10+ AI models
+- Production deployment readiness

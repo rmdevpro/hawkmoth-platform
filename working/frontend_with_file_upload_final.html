@@ -1,0 +1,1253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HAWKMOTH v0.1.0-dev - LLM Teaming + File Upload Platform</title>
+    <style>
+        :root {
+            --hawkmoth-deep: #1a2f1a;
+            --hawkmoth-dark: #2d4a2d;
+            --hawkmoth-medium: #4a6b4a;
+            --hawkmoth-sage: #6b8b6b;
+            --hawkmoth-light: #8db18d;
+            --hawkmoth-mint: #b8d4b8;
+            --hawkmoth-whisper: #e8f4e8;
+            --cost-low: #10b981;
+            --cost-medium: #f59e0b;
+            --cost-high: #ef4444;
+            --upload-zone: #f0f9ff;
+            --upload-border: #3b82f6;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+            background: white;
+            min-height: 100vh;
+            color: var(--hawkmoth-deep);
+            font-size: 14px;
+            line-height: 1.4;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header-bar {
+            height: 50px;
+            background: linear-gradient(135deg, var(--hawkmoth-dark) 0%, var(--hawkmoth-deep) 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            font-weight: 500;
+            font-size: 14px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+        
+        .system-status {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 12px;
+        }
+        
+        .status-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10b981;
+        }
+        
+        .status-indicator.warning { background: #f59e0b; }
+        .status-indicator.error { background: #ef4444; }
+        
+        .tab-bar {
+            height: 40px;
+            background: var(--hawkmoth-whisper);
+            border-bottom: 1px solid var(--hawkmoth-mint);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            gap: 2px;
+        }
+        
+        .tab {
+            padding: 8px 16px;
+            background: white;
+            border: 1px solid var(--hawkmoth-mint);
+            border-bottom: none;
+            cursor: pointer;
+            border-radius: 6px 6px 0 0;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--hawkmoth-medium);
+            transition: all 0.15s;
+        }
+        
+        .tab.active {
+            background: white;
+            color: var(--hawkmoth-dark);
+            border-color: var(--hawkmoth-light);
+            position: relative;
+            z-index: 10;
+        }
+        
+        .main-layout {
+            flex: 1;
+            display: flex;
+            height: calc(100vh - 90px);
+        }
+        
+        .navigator-bar {
+            width: 32px;
+            background: linear-gradient(180deg, var(--hawkmoth-light) 0%, var(--hawkmoth-mint) 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 12px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 2px 0 4px rgba(0,0,0,0.05);
+            z-index: 90;
+        }
+        
+        .navigator-text {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            color: var(--hawkmoth-deep);
+            font-weight: 600;
+            font-size: 12px;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+        
+        .sidebar {
+            width: 0;
+            background: white;
+            border-right: 1px solid var(--hawkmoth-whisper);
+            overflow: hidden;
+            transition: width 0.3s ease;
+            box-shadow: 2px 0 8px rgba(0,0,0,0.1);
+        }
+        
+        .sidebar.expanded { width: 350px; }
+        
+        .sidebar-content {
+            width: 350px;
+            padding: 0;
+            height: 100%;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .file-browser {
+            flex: 1;
+            padding: 20px;
+            border-bottom: 1px solid var(--hawkmoth-whisper);
+        }
+        
+        .section-header {
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--hawkmoth-dark);
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .workspace-selector {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            padding: 8px;
+            background: var(--hawkmoth-whisper);
+            border-radius: 6px;
+        }
+        
+        .workspace-selector select {
+            flex: 1;
+            padding: 4px 8px;
+            border: 1px solid var(--hawkmoth-mint);
+            border-radius: 4px;
+            background: white;
+            font-size: 12px;
+        }
+        
+        .create-workspace-btn {
+            padding: 4px 8px;
+            background: var(--hawkmoth-light);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 500;
+        }
+        
+        .upload-zone {
+            border: 2px dashed var(--upload-border);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            background: var(--upload-zone);
+            margin-bottom: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .upload-zone:hover {
+            border-color: var(--hawkmoth-medium);
+            background: #e8f4f8;
+        }
+        
+        .upload-zone.dragover {
+            border-color: var(--hawkmoth-light);
+            background: var(--hawkmoth-whisper);
+        }
+        
+        .upload-text { font-size: 13px; color: var(--hawkmoth-medium); margin-bottom: 8px; }
+        .upload-hint { font-size: 11px; color: var(--hawkmoth-sage); }
+        #fileInput { display: none; }
+        
+        .upload-progress { margin-top: 12px; display: none; }
+        .progress-bar { width: 100%; height: 6px; background: var(--hawkmoth-whisper); border-radius: 3px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--hawkmoth-light); width: 0%; transition: width 0.3s; }
+        .progress-text { font-size: 11px; color: var(--hawkmoth-sage); margin-top: 4px; }
+        
+        .file-list { max-height: 300px; overflow-y: auto; }
+        
+        .file-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--hawkmoth-whisper);
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        
+        .file-item:hover { background: var(--hawkmoth-whisper); }
+        
+        .file-icon {
+            width: 16px;
+            height: 16px;
+            margin-right: 8px;
+            border-radius: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .file-icon.code { background: #10b981; }
+        .file-icon.image { background: #f59e0b; }
+        .file-icon.binary { background: #6b7280; }
+        .file-icon.other { background: var(--hawkmoth-sage); }
+        
+        .file-info { flex: 1; min-width: 0; }
+        
+        .file-name {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--hawkmoth-dark);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .file-meta {
+            font-size: 10px;
+            color: var(--hawkmoth-sage);
+            display: flex;
+            gap: 8px;
+        }
+        
+        .file-actions {
+            display: flex;
+            gap: 4px;
+            opacity: 0;
+            transition: opacity 0.15s;
+        }
+        
+        .file-item:hover .file-actions { opacity: 1; }
+        
+        .file-action {
+            width: 20px;
+            height: 20px;
+            border: none;
+            background: var(--hawkmoth-light);
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .file-action.delete { background: var(--cost-high); }
+        
+        .project-status {
+            padding: 16px 20px;
+            background: var(--hawkmoth-whisper);
+            border-top: 1px solid var(--hawkmoth-mint);
+        }
+        
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 4px 0;
+            font-size: 11px;
+        }
+        
+        .content-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: white;
+        }
+        
+        .tab-content { flex: 1; display: none; }
+        .tab-content.active { display: flex; flex-direction: column; }
+        
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: white;
+            padding: 0;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            padding: 30px 40px;
+            overflow-y: auto;
+            background: white;
+        }
+        
+        .message {
+            margin-bottom: 20px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .user-message {
+            background: var(--hawkmoth-whisper);
+            padding: 16px 20px;
+            border-radius: 12px;
+            margin-left: 80px;
+            font-size: 14px;
+            color: var(--hawkmoth-deep);
+        }
+        
+        .bot-message {
+            background: white;
+            padding: 16px 20px;
+            margin-right: 80px;
+            white-space: pre-wrap;
+            font-size: 14px;
+            color: var(--hawkmoth-deep);
+            line-height: 1.6;
+            position: relative;
+        }
+        
+        .input-container {
+            padding: 20px 40px 30px;
+            background: white;
+            border-top: 1px solid var(--hawkmoth-whisper);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        
+        #messageInput {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid var(--hawkmoth-whisper);
+            border-radius: 8px;
+            outline: none;
+            font-size: 14px;
+            background: white;
+            color: var(--hawkmoth-deep);
+            transition: border-color 0.2s;
+        }
+        
+        #messageInput:focus { border-color: var(--hawkmoth-light); }
+        #messageInput::placeholder { color: var(--hawkmoth-sage); }
+        
+        .hawkmoth-send-button {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--hawkmoth-light);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+        
+        .hawkmoth-send-button:hover { background: var(--hawkmoth-sage); }
+        .hawkmoth-logo { width: 32px; height: 32px; fill: var(--hawkmoth-dark); }
+        
+        .file-management {
+            flex: 1;
+            padding: 30px 40px;
+            overflow-y: auto;
+            background: white;
+        }
+        
+        .management-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--hawkmoth-whisper);
+        }
+        
+        .management-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--hawkmoth-dark);
+        }
+        
+        .management-actions { display: flex; gap: 8px; }
+        
+        .action-btn {
+            padding: 8px 16px;
+            background: var(--hawkmoth-light);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: background 0.15s;
+        }
+        
+        .action-btn:hover { background: var(--hawkmoth-medium); }
+        
+        .file-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 16px;
+            margin-top: 20px;
+        }
+        
+        .file-card {
+            border: 1px solid var(--hawkmoth-whisper);
+            border-radius: 8px;
+            padding: 16px;
+            background: white;
+            transition: all 0.15s;
+            cursor: pointer;
+        }
+        
+        .file-card:hover {
+            border-color: var(--hawkmoth-light);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .file-card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .file-card-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+            margin-right: 12px;
+        }
+        
+        .file-card-name {
+            flex: 1;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--hawkmoth-dark);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .file-card-meta {
+            font-size: 11px;
+            color: var(--hawkmoth-sage);
+            margin-bottom: 8px;
+        }
+        
+        .file-card-storage {
+            display: inline-block;
+            padding: 2px 6px;
+            background: var(--hawkmoth-whisper);
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 500;
+            color: var(--hawkmoth-medium);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.show { display: flex; }
+        
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            max-width: 400px;
+            width: 90%;
+        }
+        
+        .modal-header {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--hawkmoth-dark);
+            margin-bottom: 16px;
+        }
+        
+        .modal-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--hawkmoth-mint);
+            border-radius: 4px;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+        
+        .modal-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        
+        .modal-btn.primary {
+            background: var(--hawkmoth-light);
+            color: white;
+        }
+        
+        .modal-btn.secondary {
+            background: var(--hawkmoth-whisper);
+            color: var(--hawkmoth-dark);
+        }
+        
+        .loading {
+            color: var(--hawkmoth-medium);
+            font-style: italic;
+        }
+        
+        .llm-response-info {
+            margin-top: 12px;
+            padding: 8px 12px;
+            background: var(--hawkmoth-whisper);
+            border-radius: 6px;
+            font-size: 11px;
+            border-left: 3px solid var(--hawkmoth-light);
+        }
+        
+        .response-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 2px 0;
+        }
+        
+        .model-badge {
+            background: var(--hawkmoth-medium);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="header-bar">
+        <div class="header-title">
+            <span>HAWKMOTH v0.1.0-dev - LLM Teaming + File Upload Platform</span>
+        </div>
+        <div class="system-status" id="systemStatus">
+            <div class="status-group">
+                <span class="status-indicator" id="llmStatusIndicator"></span>
+                <span id="llmStatusText">LLM: Loading...</span>
+            </div>
+            <div class="status-group">
+                <span class="status-indicator" id="storageStatusIndicator"></span>
+                <span id="storageStatusText">Storage: Loading...</span>
+            </div>
+            <div class="status-group">
+                <span class="status-indicator" id="uploadStatusIndicator"></span>
+                <span id="uploadStatusText">Upload: Loading...</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="tab-bar">
+        <div class="tab active" onclick="switchTab('chat')">💬 Chat</div>
+        <div class="tab" onclick="switchTab('files')">📁 File Manager</div>
+    </div>
+    
+    <div class="main-layout">
+        <div class="navigator-bar" onclick="toggleSidebar()">
+            <div class="navigator-text">Navigator</div>
+        </div>
+        
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-content">
+                <div class="file-browser">
+                    <div class="section-header">
+                        📁 File Browser
+                        <button class="create-workspace-btn" onclick="showCreateWorkspaceModal()">New</button>
+                    </div>
+                    
+                    <div class="workspace-selector">
+                        <select id="workspaceSelect" onchange="switchWorkspace()">
+                            <option value="">Loading workspaces...</option>
+                        </select>
+                    </div>
+                    
+                    <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
+                        <div class="upload-text">Click to upload files</div>
+                        <div class="upload-hint">or drag and drop</div>
+                        <div class="upload-progress" id="uploadProgress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progressFill"></div>
+                            </div>
+                            <div class="progress-text" id="progressText">Uploading...</div>
+                        </div>
+                    </div>
+                    
+                    <input type="file" id="fileInput" multiple onchange="handleFileUpload(event)">
+                    
+                    <div class="file-list" id="fileList">
+                        <div class="loading">Loading files...</div>
+                    </div>
+                </div>
+                
+                <div class="project-status">
+                    <div class="section-header">Status</div>
+                    <div class="status-item">
+                        <span>Current Workspace:</span>
+                        <span id="currentWorkspace">-</span>
+                    </div>
+                    <div class="status-item">
+                        <span>Files:</span>
+                        <span id="fileCount">0</span>
+                    </div>
+                    <div class="status-item">
+                        <span>Storage Used:</span>
+                        <span id="storageUsed">0 MB</span>
+                    </div>
+                    <div class="status-item">
+                        <span>Upload Ready:</span>
+                        <span id="uploadReady">No</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="content-area">
+            <div class="tab-content active" id="chatTab">
+                <div class="chat-area">
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="message bot-message">Welcome to HAWKMOTH v0.1.0-dev - LLM Teaming + File Upload Platform
+
+🦅 **Complete Development Environment**
+HAWKMOTH now features LLM Teaming with persistent file storage and upload capabilities.
+
+**🧠 LLM Teaming Features:**
+• Intelligent model routing based on query complexity
+• Sticky sessions with context preservation  
+• Real-time cost tracking and optimization
+• 60-80% cost savings vs direct vendor pricing
+
+**📁 File Upload & Storage:**
+• Persistent workspace management
+• 3-layer storage (Git repos + HF Datasets + Local memory)
+• Drag & drop file uploads
+• File browser with metadata
+• Cross-session file persistence
+
+**🛣️ Available Model Lanes:**
+• Quick Questions: FREE (DeepSeek R1 Free)
+• Development: $1.25/1k (DeepSeek V3)  
+• Complex Reasoning: $3/$7/1k (DeepSeek R1)
+• Premium Analysis: $3/$15/1k (Claude Sonnet 4)
+
+**🎯 Try These Commands:**
+• "create project my-app" - Create new workspace
+• "list files" - Show current project files
+• "storage status" - Check storage statistics
+• "Debug this Python code" - Development lane
+• "I need comprehensive analysis" - Premium routing
+
+**Upload Files:** Use the sidebar file browser or drag files into the upload zone.
+
+Ready for complete development workflow</div>
+                    </div>
+                    
+                    <div class="input-container">
+                        <input type="text" id="messageInput" placeholder="Try 'create project my-app' or upload files via sidebar..." />
+                        <button class="hawkmoth-send-button" onclick="sendMessage()">
+                            <svg class="hawkmoth-logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                                <g stroke="currentColor" stroke-width="2" fill="none">
+                                    <ellipse cx="50" cy="45" rx="3" ry="20"/>
+                                    <ellipse cx="42" cy="35" rx="12" ry="8" transform="rotate(-15 42 35)"/>
+                                    <ellipse cx="58" cy="35" rx="12" ry="8" transform="rotate(15 58 35)"/>
+                                    <ellipse cx="40" cy="42" rx="10" ry="6" transform="rotate(-20 40 42)"/>
+                                    <ellipse cx="60" cy="42" rx="10" ry="6" transform="rotate(20 60 42)"/>
+                                    <circle cx="50" cy="25" r="4"/>
+                                    <circle cx="48" cy="23" r="1.5"/>
+                                    <circle cx="52" cy="23" r="1.5"/>
+                                    <path d="M47 20 L45 15"/>
+                                    <path d="M53 20 L55 15"/>
+                                </g>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="filesTab">
+                <div class="file-management">
+                    <div class="management-header">
+                        <div class="management-title">File Management</div>
+                        <div class="management-actions">
+                            <button class="action-btn" onclick="refreshFiles()">🔄 Refresh</button>
+                            <button class="action-btn" onclick="document.getElementById('fileInput').click()">📁 Upload</button>
+                        </div>
+                    </div>
+                    
+                    <div class="file-grid" id="fileGrid">
+                        <div class="loading">Loading files...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="createWorkspaceModal">
+        <div class="modal-content">
+            <div class="modal-header">Create New Workspace</div>
+            <input type="text" class="modal-input" id="workspaceNameInput" placeholder="Enter workspace name...">
+            <input type="text" class="modal-input" id="workspaceDescInput" placeholder="Enter description (optional)...">
+            <div class="modal-actions">
+                <button class="modal-btn secondary" onclick="hideCreateWorkspaceModal()">Cancel</button>
+                <button class="modal-btn primary" onclick="createWorkspace()">Create</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentWorkspace = null;
+        let sidebarExpanded = false;
+        let currentSessionId = null;
+        let activeTab = 'chat';
+        let systemStatus = {
+            llm: false,
+            storage: false,
+            upload: false
+        };
+        
+        window.addEventListener('load', function() {
+            loadSystemStatus();
+            loadWorkspaces();
+            setupDragAndDrop();
+        });
+        
+        async function loadSystemStatus() {
+            try {
+                const response = await fetch('/enhanced-status');
+                const data = await response.json();
+                updateSystemStatus(data);
+            } catch (error) {
+                console.error('Failed to load system status:', error);
+                updateSystemStatus({ 
+                    enhanced_features_available: false,
+                    storage_available: false,
+                    file_upload_available: false 
+                });
+            }
+        }
+        
+        function updateSystemStatus(data) {
+            const llmIndicator = document.getElementById('llmStatusIndicator');
+            const llmText = document.getElementById('llmStatusText');
+            
+            if (data.enhanced_features_available) {
+                llmIndicator.className = 'status-indicator';
+                llmText.textContent = 'LLM: Active';
+                systemStatus.llm = true;
+            } else {
+                llmIndicator.className = 'status-indicator warning';
+                llmText.textContent = 'LLM: Basic';
+                systemStatus.llm = false;
+            }
+            
+            const storageIndicator = document.getElementById('storageStatusIndicator');
+            const storageText = document.getElementById('storageStatusText');
+            
+            if (data.storage_available) {
+                storageIndicator.className = 'status-indicator';
+                storageText.textContent = 'Storage: Ready';
+                systemStatus.storage = true;
+            } else {
+                storageIndicator.className = 'status-indicator error';
+                storageText.textContent = 'Storage: Offline';
+                systemStatus.storage = false;
+            }
+            
+            const uploadIndicator = document.getElementById('uploadStatusIndicator');
+            const uploadText = document.getElementById('uploadStatusText');
+            
+            if (data.file_upload_available) {
+                uploadIndicator.className = 'status-indicator';
+                uploadText.textContent = 'Upload: Ready';
+                systemStatus.upload = true;
+                document.getElementById('uploadReady').textContent = 'Yes';
+            } else {
+                uploadIndicator.className = 'status-indicator error';
+                uploadText.textContent = 'Upload: Offline';
+                systemStatus.upload = false;
+                document.getElementById('uploadReady').textContent = 'No';
+            }
+            
+            if (data.current_workspace) {
+                currentWorkspace = data.current_workspace.project_name;
+                document.getElementById('currentWorkspace').textContent = currentWorkspace;
+                updateWorkspaceStatus(data.current_workspace);
+            }
+        }
+        
+        function updateWorkspaceStatus(workspace) {
+            document.getElementById('fileCount').textContent = Object.keys(workspace.files || {}).length;
+            const totalSize = Object.values(workspace.files || {}).reduce((sum, file) => sum + (file.size || 0), 0);
+            const sizeMB = (totalSize / (1024 * 1024)).toFixed(2);
+            document.getElementById('storageUsed').textContent = sizeMB + ' MB';
+        }
+        
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(tabName + 'Tab').classList.add('active');
+            activeTab = tabName;
+            if (tabName === 'files') loadFileGrid();
+        }
+        
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebarExpanded = !sidebarExpanded;
+            if (sidebarExpanded) {
+                sidebar.classList.add('expanded');
+                loadFiles();
+            } else {
+                sidebar.classList.remove('expanded');
+            }
+        }
+        
+        async function loadWorkspaces() {
+            try {
+                const response = await fetch('/workspaces');
+                const data = await response.json();
+                const select = document.getElementById('workspaceSelect');
+                select.innerHTML = '<option value="">Select workspace...</option>';
+                if (data.success && data.workspaces) {
+                    data.workspaces.forEach(workspace => {
+                        const option = document.createElement('option');
+                        option.value = workspace.project_name;
+                        option.textContent = `${workspace.project_name} (${workspace.file_count} files)`;
+                        if (workspace.project_name === currentWorkspace) option.selected = true;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Failed to load workspaces:', error);
+            }
+        }
+        
+        async function switchWorkspace() {
+            const selectedWorkspace = document.getElementById('workspaceSelect').value;
+            if (!selectedWorkspace) return;
+            try {
+                const response = await fetch('/storage/workspace/switch', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ project_name: selectedWorkspace })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    currentWorkspace = selectedWorkspace;
+                    document.getElementById('currentWorkspace').textContent = currentWorkspace;
+                    loadFiles();
+                    loadSystemStatus();
+                } else {
+                    alert('Failed to switch workspace: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Failed to switch workspace:', error);
+            }
+        }
+        
+        function showCreateWorkspaceModal() {
+            document.getElementById('createWorkspaceModal').classList.add('show');
+            document.getElementById('workspaceNameInput').focus();
+        }
+        
+        function hideCreateWorkspaceModal() {
+            document.getElementById('createWorkspaceModal').classList.remove('show');
+            document.getElementById('workspaceNameInput').value = '';
+            document.getElementById('workspaceDescInput').value = '';
+        }
+        
+        async function createWorkspace() {
+            const name = document.getElementById('workspaceNameInput').value.trim();
+            const description = document.getElementById('workspaceDescInput').value.trim();
+            if (!name) {
+                alert('Please enter a workspace name');
+                return;
+            }
+            try {
+                const response = await fetch('/storage/workspace/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        project_name: name,
+                        description: description || `Workspace created on ${new Date().toLocaleDateString()}`
+                    })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    hideCreateWorkspaceModal();
+                    currentWorkspace = name;
+                    loadWorkspaces();
+                    loadSystemStatus();
+                    addMessage(`✅ Workspace '${name}' created successfully`, 'bot');
+                } else {
+                    alert('Failed to create workspace: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Failed to create workspace:', error);
+            }
+        }
+        
+        async function loadFiles() {
+            try {
+                const response = await fetch('/files');
+                const data = await response.json();
+                const fileList = document.getElementById('fileList');
+                if (data.success && data.files) {
+                    if (data.files.length === 0) {
+                        fileList.innerHTML = '<div style="text-align: center; color: var(--hawkmoth-sage); font-size: 12px; padding: 20px;">No files in workspace</div>';
+                    } else {
+                        fileList.innerHTML = '';
+                        data.files.forEach(file => {
+                            fileList.appendChild(createFileItem(file));
+                        });
+                    }
+                    updateWorkspaceStatus({
+                        files: data.files.reduce((acc, file) => {
+                            acc[file.path] = { size: file.size };
+                            return acc;
+                        }, {})
+                    });
+                } else {
+                    fileList.innerHTML = '<div style="color: var(--cost-high); font-size: 12px;">Error loading files</div>';
+                }
+            } catch (error) {
+                console.error('Failed to load files:', error);
+            }
+        }
+        
+        function createFileItem(file) {
+            const item = document.createElement('div');
+            item.className = 'file-item';
+            const iconClass = file.type === 'text' ? 'code' : file.type === 'image' ? 'image' : file.type === 'binary' ? 'binary' : 'other';
+            const iconText = file.type === 'text' ? 'T' : file.type === 'image' ? 'I' : file.type === 'binary' ? 'B' : '?';
+            item.innerHTML = `
+                <div class="file-icon ${iconClass}">${iconText}</div>
+                <div class="file-info">
+                    <div class="file-name" title="${file.path}">${file.path}</div>
+                    <div class="file-meta">
+                        <span>${file.human_size}</span>
+                        <span>${file.storage_layer}</span>
+                    </div>
+                </div>
+                <div class="file-actions">
+                    <button class="file-action" onclick="downloadFile('${file.path}')" title="Download">⬇</button>
+                    <button class="file-action delete" onclick="deleteFile('${file.path}')" title="Delete">×</button>
+                </div>
+            `;
+            return item;
+        }
+        
+        async function loadFileGrid() {
+            try {
+                const response = await fetch('/files');
+                const data = await response.json();
+                const fileGrid = document.getElementById('fileGrid');
+                if (data.success && data.files) {
+                    if (data.files.length === 0) {
+                        fileGrid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: var(--hawkmoth-sage); padding: 40px;">No files in workspace<br><button class="action-btn" onclick="document.getElementById(\'fileInput\').click()" style="margin-top: 16px;">Upload Files</button></div>';
+                    } else {
+                        fileGrid.innerHTML = '';
+                        data.files.forEach(file => {
+                            fileGrid.appendChild(createFileCard(file));
+                        });
+                    }
+                } else {
+                    fileGrid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: var(--cost-high); padding: 40px;">Error loading files</div>';
+                }
+            } catch (error) {
+                console.error('Failed to load file grid:', error);
+            }
+        }
+        
+        function createFileCard(file) {
+            const card = document.createElement('div');
+            card.className = 'file-card';
+            const iconClass = file.type === 'text' ? 'code' : file.type === 'image' ? 'image' : file.type === 'binary' ? 'binary' : 'other';
+            const iconText = file.type === 'text' ? 'T' : file.type === 'image' ? 'I' : file.type === 'binary' ? 'B' : '?';
+            card.innerHTML = `
+                <div class="file-card-header">
+                    <div class="file-card-icon ${iconClass}">${iconText}</div>
+                    <div class="file-card-name" title="${file.path}">${file.path}</div>
+                </div>
+                <div class="file-card-meta">${file.human_size} • ${file.human_time}</div>
+                <div class="file-card-storage">${file.storage_layer}</div>
+            `;
+            card.onclick = () => downloadFile(file.path);
+            return card;
+        }
+        
+        async function downloadFile(filePath) {
+            try {
+                const response = await fetch(`/download/${encodeURIComponent(filePath)}`);
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filePath.split('/').pop();
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                } else {
+                    alert('Failed to download file');
+                }
+            } catch (error) {
+                console.error('Download error:', error);
+            }
+        }
+        
+        async function deleteFile(filePath) {
+            if (!confirm(`Are you sure you want to delete '${filePath}'?`)) return;
+            try {
+                const response = await fetch(`/files/${encodeURIComponent(filePath)}`, { method: 'DELETE' });
+                const data = await response.json();
+                if (data.success) {
+                    loadFiles();
+                    if (activeTab === 'files') loadFileGrid();
+                    loadSystemStatus();
+                } else {
+                    alert('Failed to delete file: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Delete error:', error);
+            }
+        }
+        
+        function refreshFiles() {
+            loadFiles();
+            if (activeTab === 'files') loadFileGrid();
+            loadSystemStatus();
+        }
+        
+        function setupDragAndDrop() {
+            const uploadZone = document.querySelector('.upload-zone');
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                uploadZone.addEventListener(eventName, e => { e.preventDefault(); e.stopPropagation(); }, false);
+            });
+            ['dragenter', 'dragover'].forEach(eventName => {
+                uploadZone.addEventListener(eventName, () => uploadZone.classList.add('dragover'), false);
+            });
+            ['dragleave', 'drop'].forEach(eventName => {
+                uploadZone.addEventListener(eventName, () => uploadZone.classList.remove('dragover'), false);
+            });
+            uploadZone.addEventListener('drop', e => handleFiles(e.dataTransfer.files), false);
+        }
+        
+        function handleFileUpload(event) {
+            handleFiles(event.target.files);
+        }
+        
+        async function handleFiles(files) {
+            if (!systemStatus.upload) {
+                alert('File upload system is not available');
+                return;
+            }
+            const progressDiv = document.getElementById('uploadProgress');
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            progressDiv.style.display = 'block';
+            const formData = new FormData();
+            for (let file of files) formData.append('files', file);
+            if (currentWorkspace) formData.append('workspace_name', currentWorkspace);
+            try {
+                const response = await fetch('/upload-multiple', { method: 'POST', body: formData });
+                const data = await response.json();
+                if (data.success) {
+                    progressFill.style.width = '100%';
+                    progressText.textContent = `Uploaded ${data.results.filter(r => r.success).length}/${files.length} files`;
+                    setTimeout(() => {
+                        progressDiv.style.display = 'none';
+                        progressFill.style.width = '0%';
+                    }, 2000);
+                    loadFiles();
+                    if (activeTab === 'files') loadFileGrid();
+                    loadSystemStatus();
+                    addMessage(`📁 Uploaded ${data.results.filter(r => r.success).length} files successfully`, 'bot');
+                } else {
+                    progressText.textContent = 'Upload failed';
+                    alert('Upload failed: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Upload error:', error);
+                alert('Upload error: ' + error.message);
+            } finally {
+                setTimeout(() => {
+                    progressDiv.style.display = 'none';
+                    progressFill.style.width = '0%';
+                }, 3000);
+            }
+        }
+        
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            if (!message) return;
+            addMessage(message, 'user');
+            input.value = '';
+            let loadingMsg = '🤔 Processing...';
+            if (message.includes('create project')) loadingMsg = '📁 Creating workspace...';
+            else if (message.includes('list files') || message.includes('storage status')) loadingMsg = '📊 Checking storage...';
+            else if (message.includes('debug') || message.includes('code')) loadingMsg = '💻 Routing to development model...';
+            const loadingDiv = addMessage(loadingMsg, 'bot');
+            loadingDiv.classList.add('loading');
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message, user_id: 'default', session_id: currentSessionId })
+                });
+                const data = await response.json();
+                loadingDiv.remove();
+                const botMessage = addMessage(data.response, 'bot');
+                if (data.llm_teaming) {
+                    addLlmResponseInfo(botMessage, data.llm_teaming);
+                    currentSessionId = data.llm_teaming.session_id;
+                }
+                if (data.command_type === 'storage') {
+                    setTimeout(() => { loadWorkspaces(); loadFiles(); loadSystemStatus(); }, 500);
+                }
+            } catch (error) {
+                loadingDiv.remove();
+                addMessage('❌ Error: Could not connect to server', 'bot');
+            }
+        }
+        
+        function addMessage(text, type) {
+            const messages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}-message`;
+            messageDiv.textContent = text;
+            messages.appendChild(messageDiv);
+            messages.scrollTop = messages.scrollHeight;
+            return messageDiv;
+        }
+        
+        function addLlmResponseInfo(messageDiv, llmData) {
+            if (!llmData) return;
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'llm-response-info';
+            const modelSwitched = llmData.model_switched ? ' 🔄 (Switched)' : '';
+            infoDiv.innerHTML = `
+                <div class="response-meta">
+                    <span>Model: <span class="model-badge">${llmData.model_used}</span>${modelSwitched}</span>
+                    <span>Cost: $${llmData.cost.toFixed(4)}</span>
+                </div>
+                <div class="response-meta">
+                    <span>Lane: ${llmData.session_info?.model_lane || 'Unknown'}</span>
+                    <span>Time: ${llmData.response_time.toFixed(2)}s</span>
+                </div>
+            `;
+            messageDiv.appendChild(infoDiv);
+        }
+        
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') sendMessage();
+        });
+        
+        document.getElementById('workspaceNameInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') createWorkspace();
+        });
+        
+        document.getElementById('createWorkspaceModal').addEventListener('click', function(e) {
+            if (e.target === this) hideCreateWorkspaceModal();
+        });
+        
+        setInterval(loadSystemStatus, 30000);
+        setInterval(() => { if (sidebarExpanded) loadFiles(); }, 60000);
+    </script>
+</body>
+</html>

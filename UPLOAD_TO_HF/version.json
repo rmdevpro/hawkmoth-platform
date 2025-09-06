@@ -1,0 +1,112 @@
+{
+    "platform": "HAWKMOTH",
+    "version": "v0.0.4-enhanced",
+    "release_date": "2025-09-06",
+    "component_status": "Component 4: Enhanced Model Variety COMPLETE",
+    "description": "Enhanced LLM Teaming Platform with Full Model Variety Support",
+    "features": {
+        "total_models": 10,
+        "enhanced_switching": true,
+        "cost_optimization": true,
+        "model_recommendations": true,
+        "natural_language_control": true,
+        "repository_deployment": true
+    },
+    "models_available": [
+        {
+            "name": "DeepSeek R1",
+            "type": "deepseek_r1",
+            "cost": "$3/$7 per 1k tokens",
+            "specialties": "Complex reasoning, math, research"
+        },
+        {
+            "name": "DeepSeek R1 Throughput",
+            "type": "deepseek_r1_throughput", 
+            "cost": "$0.55/$2.19 per 1k tokens",
+            "specialties": "Cost-efficient reasoning"
+        },
+        {
+            "name": "DeepSeek V3",
+            "type": "deepseek_v3",
+            "cost": "$1.25 per 1k tokens",
+            "specialties": "General tasks, coding, balanced performance"
+        },
+        {
+            "name": "Llama 3.3 70B",
+            "type": "llama_3_3_70b",
+            "cost": "$0.88 per 1k tokens",
+            "specialties": "Multilingual, dialogue, conversation"
+        },
+        {
+            "name": "Llama 3.1 8B",
+            "type": "llama_3_1_8b",
+            "cost": "$0.18 per 1k tokens",
+            "specialties": "Simple tasks, fast responses"
+        },
+        {
+            "name": "DeepSeek R1 Free",
+            "type": "deepseek_r1_free",
+            "cost": "FREE",
+            "specialties": "Free testing, experimentation"
+        },
+        {
+            "name": "Claude Sonnet 4",
+            "type": "claude_sonnet_4",
+            "cost": "$3/$15 per 1k tokens",
+            "specialties": "Premium analysis, complex tasks"
+        },
+        {
+            "name": "Claude Opus 4",
+            "type": "claude_opus_4", 
+            "cost": "$15/$75 per 1k tokens",
+            "specialties": "Critical tasks, maximum quality"
+        },
+        {
+            "name": "HAWKMOTH Local",
+            "type": "hawkmoth_local",
+            "cost": "FREE",
+            "specialties": "Platform control, status, commands"
+        },
+        {
+            "name": "Auto-Select",
+            "type": "auto_select",
+            "cost": "Variable (optimized)",
+            "specialties": "Automatic routing, cost optimization"
+        }
+    ],
+    "api_endpoints": [
+        "/communication/models",
+        "/communication/current-model",
+        "/communication/switch-model", 
+        "/communication/parse-request",
+        "/communication/status",
+        "/chat",
+        "/status",
+        "/health"
+    ],
+    "natural_language_commands": [
+        "use deepseek r1",
+        "switch to free model",
+        "chat with claude", 
+        "use cheapest model",
+        "use best quality",
+        "let hawkmoth decide"
+    ],
+    "deployment_info": {
+        "platform": "HuggingFace Spaces",
+        "runtime": "Python 3.9+",
+        "dependencies": ["fastapi", "uvicorn", "requests"],
+        "port": 7860,
+        "ready_for_testing": true
+    },
+    "changelog": {
+        "v0.0.4-enhanced": [
+            "Added 10+ AI model support with natural language switching",
+            "Implemented cost optimization and model recommendations", 
+            "Enhanced conversation manager with full model variety",
+            "Added comprehensive API endpoints for programmatic control",
+            "Improved pattern recognition for model switching intent",
+            "Added fallback support for production deployment"
+        ]
+    }
+}

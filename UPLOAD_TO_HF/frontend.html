@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HAWKMOTH v0.1.0-dev - LLM Teaming Platform</title>
+    <style>
+        :root {
+            /* Hawkmoth Color Palette */
+            --cicada-deep: #1a2f1a;
+            --cicada-dark: #2d4a2d;
+            --cicada-medium: #4a6b4a;
+            --cicada-sage: #6b8b6b;
+            --cicada-light: #8db18d;
+            --cicada-mint: #b8d4b8;
+            --cicada-whisper: #e8f4e8;
+            --routing-blue: #2563eb;
+            --cost-amber: #d97706;
+        }
+        
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+            background: white;
+            min-height: 100vh;
+            color: var(--cicada-deep);
+            font-size: 14px;
+            line-height: 1.4;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Header Bar */
+        .header-bar {
+            height: 50px;
+            background: linear-gradient(135deg, var(--cicada-dark) 0%, var(--cicada-deep) 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            font-weight: 500;
+            font-size: 14px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+        
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .header-indicators {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 12px;
+        }
+        
+        .routing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+        }
+        
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #22c55e;
+        }
+        
+        .status-dot.inactive {
+            background: #ef4444;
+        }
+        
+        .status-dot.warning {
+            background: #f59e0b;
+        }
+        
+        /* Main Chat Container - Vertical Layout */
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+            height: calc(100vh - 50px);
+        }
+        
+        .chat-messages {
+            flex: 1;
+            padding: 30px 40px;
+            overflow-y: auto;
+            background: white;
+        }
+        
+        .message {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .user-message {
+            background: var(--cicada-whisper);
+            padding: 16px 20px;
+            border-radius: 12px;
+            margin-left: 80px;
+            font-size: 14px;
+            color: var(--cicada-deep);
+        }
+        
+        .bot-message {
+            background: white;
+            padding: 16px 20px;
+            margin-right: 80px;
+            white-space: pre-wrap;
+            font-size: 14px;
+            color: var(--cicada-deep);
+            line-height: 1.6;
+            position: relative;
+        }
+        
+        /* Model indicator - bottom right of message */
+        .model-indicator {
+            position: absolute;
+            bottom: 8px;
+            right: 16px;
+            background: var(--cicada-medium);
+            color: white;
+            font-size: 10px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-weight: 500;
+        }
+        
+        .model-indicator.free {
+            background: #22c55e;
+        }
+        
+        .model-indicator.paid {
+            background: var(--cost-amber);
+        }
+        
+        .model-indicator.premium {
+            background: #7c3aed;
+        }
+        
+        /* File Upload Section */
+        .file-section {
+            padding: 20px 40px;
+            background: var(--cicada-whisper);
+            border-top: 1px solid var(--cicada-light);
+            display: none; /* Hidden by default */
+        }
+        
+        .file-section.active {
+            display: block;
+        }
+        
+        .file-upload-area {
+            border: 2px dashed var(--cicada-light);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 16px;
+        }
+        
+        .file-upload-area:hover {
+            border-color: var(--cicada-sage);
+            background: var(--cicada-whisper);
+        }
+        
+        .file-upload-area.dragover {
+            border-color: var(--routing-blue);
+            background: rgba(37, 99, 235, 0.05);
+        }
+        
+        .claude-controls {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .instruction-input {
+            flex: 1;
+            min-width: 200px;
+            padding: 8px 12px;
+            border: 1px solid var(--cicada-light);
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .claude-button {
+            padding: 8px 16px;
+            background: var(--cicada-medium);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        
+        .claude-button:hover {
+            background: var(--cicada-sage);
+        }
+        
+        .claude-button:disabled {
+            background: var(--cicada-light);
+            cursor: not-allowed;
+        }
+        
+        .file-list {
+            max-height: 120px;
+            overflow-y: auto;
+            margin-top: 12px;
+        }
+        
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            background: white;
+            border: 1px solid var(--cicada-light);
+            border-radius: 6px;
+            margin-bottom: 4px;
+            font-size: 13px;
+        }
+        
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .file-status {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+        
+        .file-status.pending { background: #f3f4f6; color: #6b7280; }
+        .file-status.uploading { background: #dbeafe; color: #1d4ed8; }
+        .file-status.processing { background: #fef3c7; color: #d97706; }
+        .file-status.complete { background: #dcfce7; color: #16a34a; }
+        .file-status.error { background: #fee2e2; color: #dc2626; }
+        
+        /* Input Area */
+        .input-container {
+            padding: 20px 40px 30px;
+            background: white;
+            border-top: 1px solid var(--cicada-whisper);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        #messageInput {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid var(--cicada-whisper);
+            border-radius: 8px;
+            outline: none;
+            font-size: 14px;
+            background: white;
+            color: var(--cicada-deep);
+            transition: border-color 0.2s;
+        }
+        
+        #messageInput:focus {
+            border-color: var(--cicada-light);
+        }
+        
+        #messageInput::placeholder {
+            color: var(--cicada-sage);
+        }
+        
+        /* Send Button */
+        .send-button {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--cicada-light);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+        
+        .send-button:hover {
+            background: var(--cicada-sage);
+        }
+        
+        .send-icon {
+            width: 20px;
+            height: 20px;
+            fill: var(--cicada-dark);
+        }
+        
+        .loading {
+            color: var(--cicada-medium);
+            font-style: italic;
+        }
+        
+        /* File Toggle Button */
+        .file-toggle-button {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--cicada-whisper);
+            border: 2px solid var(--cicada-light);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        
+        .file-toggle-button:hover {
+            background: var(--cicada-light);
+        }
+        
+        .file-toggle-button.active {
+            background: var(--cicada-medium);
+            border-color: var(--cicada-medium);
+        }
+        
+        .file-icon {
+            width: 20px;
+            height: 20px;
+            fill: var(--cicada-dark);
+        }
+        
+        .file-toggle-button.active .file-icon {
+            fill: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Bar -->
+    <div class="header-bar">
+        <div class="header-title">
+            <span>HAWKMOTH v0.1.0-dev - LLM Teaming Platform</span>
+        </div>
+        <div class="header-indicators">
+            <div class="routing-indicator">
+                <div class="status-dot" id="together-status"></div>
+                <span>Together AI</span>
+            </div>
+            <div class="routing-indicator">
+                <div class="status-dot inactive" id="claude-status"></div>
+                <span>Claude</span>
+            </div>
+            <div class="routing-indicator">
+                <div class="status-dot inactive" id="gpt4-status"></div>
+                <span>GPT-4</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Chat Container -->
+    <div class="chat-container">
+        <div class="chat-messages" id="chatMessages">
+            <div class="message bot-message">
+                <div class="model-indicator">HAWKMOTH Local</div>
+                Welcome to HAWKMOTH v0.1.0-dev - LLM Teaming Platform
+
+Intelligent AI model routing for optimal performance and cost.
+
+**Available Commands:**
+• `hawkmoth status` - Platform health check
+• `routing status` - LLM system status  
+• `test together` - Test API connections
+• Paste GitHub URLs for instant deployment
+
+**Ready for intelligent conversations with cost optimization.**
+            </div>
+        </div>
+        
+        <!-- File Upload Section -->
+        <div class="file-section" id="fileSection">
+            <div class="file-upload-area" id="fileUploadArea" onclick="document.getElementById('fileInput').click()">
+                <p><strong>📁 Upload files to analyze with Claude</strong></p>
+                <p style="color: var(--cicada-sage); margin-top: 8px; font-size: 13px;">Drop files here or click to browse</p>
+                <input type="file" id="fileInput" style="display: none;" multiple accept=".txt,.md,.py,.js,.html,.css,.json,.pdf,.docx,.xlsx,.png,.jpg">
+            </div>
+            
+            <div class="claude-controls">
+                <input type="text" id="instructionInput" class="instruction-input" placeholder="Instruction for Claude (e.g., 'Analyze this code', 'Summarize this document')" value="Analyze this file">
+                <button class="claude-button" id="analyzeButton" onclick="analyzeWithClaude()" disabled>🤖 Analyze with Claude</button>
+                <button class="claude-button" onclick="clearFiles()">🗑️ Clear</button>
+            </div>
+            
+            <div class="file-list" id="fileList"></div>
+        </div>
+        
+        <div class="input-container">
+            <button class="file-toggle-button" id="fileToggleButton" onclick="toggleFileSection()">
+                <svg class="file-icon" viewBox="0 0 24 24">
+                    <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                </svg>
+            </button>
+            <input type="text" id="messageInput" placeholder="Ask anything or try 'routing status'..." />
+            <button class="send-button" onclick="sendMessage()">
+                <svg class="send-icon" viewBox="0 0 24 24">
+                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let sessionStats = {
+            queries: 0,
+            totalCost: 0.0
+        };
+        
+        let uploadedFiles = [];
+        let fileSectionVisible = false;
+        
+        window.addEventListener('load', function() {
+            checkAPIStatus();
+            checkClaudeStatus();
+        });
+        
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const messages = document.getElementById('chatMessages');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            addMessage(message, 'user');
+            input.value = '';
+            
+            sessionStats.queries++;
+            
+            const loadingDiv = addMessage('Processing...', 'bot');
+            loadingDiv.classList.add('loading');
+            
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: message, user_id: 'default' })
+                });
+                
+                const data = await response.json();
+                loadingDiv.remove();
+                
+                const messageDiv = addMessage(data.response, 'bot');
+                if (data.routing_info) {
+                    addModelIndicator(messageDiv, data.routing_info);
+                    
+                    if (data.routing_info.estimated_cost) {
+                        sessionStats.totalCost += data.routing_info.estimated_cost;
+                    }
+                }
+                
+            } catch (error) {
+                loadingDiv.remove();
+                addMessage('Error: Could not connect to server', 'bot');
+            }
+        }
+        
+        function addMessage(text, type) {
+            const messages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}-message`;
+            messageDiv.textContent = text;
+            messages.appendChild(messageDiv);
+            messages.scrollTop = messages.scrollHeight;
+            return messageDiv;
+        }
+        
+        function addModelIndicator(messageDiv, routingInfo) {
+            const indicator = document.createElement('div');
+            indicator.className = 'model-indicator';
+            
+            // Determine indicator class based on cost
+            if (routingInfo.estimated_cost === 0) {
+                indicator.classList.add('free');
+            } else if (routingInfo.estimated_cost < 0.01) {
+                indicator.classList.add('paid');
+            } else {
+                indicator.classList.add('premium');
+            }
+            
+            // Clean model name
+            let modelName = routingInfo.target_llm;
+            if (modelName.includes('hawkmoth-local')) modelName = 'HAWKMOTH Local';
+            if (modelName.includes('DeepSeek-V3')) modelName = 'DeepSeek V3';
+            if (modelName.includes('DeepSeek-R1')) modelName = 'DeepSeek R1';
+            if (modelName.includes('Claude')) modelName = 'Claude Sonnet 4';
+            
+            indicator.textContent = modelName;
+            messageDiv.appendChild(indicator);
+        }
+        
+        async function checkAPIStatus() {
+            try {
+                const response = await fetch('/routing/status');
+                const data = await response.json();
+                
+                updateAPIIndicator('together-status', data.api_status?.together_ai);
+                updateAPIIndicator('claude-status', data.api_status?.claude);
+                updateAPIIndicator('gpt4-status', data.api_status?.openai);
+                
+            } catch (error) {
+                console.log('Could not check API status:', error);
+            }
+        }
+        
+        function updateAPIIndicator(elementId, isConnected) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.className = isConnected ? 'status-dot' : 'status-dot inactive';
+            }
+        }
+        
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        setInterval(checkAPIStatus, 30000);
+        
+        // ===============================================
+        // CLAUDE FILE INTEGRATION FUNCTIONS (Component 3)
+        // ===============================================
+        
+        function toggleFileSection() {
+            const fileSection = document.getElementById('fileSection');
+            const toggleButton = document.getElementById('fileToggleButton');
+            
+            fileSectionVisible = !fileSectionVisible;
+            
+            if (fileSectionVisible) {
+                fileSection.classList.add('active');
+                toggleButton.classList.add('active');
+            } else {
+                fileSection.classList.remove('active');
+                toggleButton.classList.remove('active');
+            }
+        }
+        
+        // File upload handling
+        document.getElementById('fileInput').addEventListener('change', handleFileSelection);
+        
+        // Drag and drop
+        const fileUploadArea = document.getElementById('fileUploadArea');
+        
+        fileUploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileUploadArea.classList.add('dragover');
+        });
+        
+        fileUploadArea.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            fileUploadArea.classList.remove('dragover');
+        });
+        
+        fileUploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileUploadArea.classList.remove('dragover');
+            const files = Array.from(e.dataTransfer.files);
+            addFilesToList(files);
+        });
+        
+        function handleFileSelection(e) {
+            const files = Array.from(e.target.files);
+            addFilesToList(files);
+        }
+        
+        function addFilesToList(files) {
+            files.forEach(file => {
+                // Check if file already exists
+                if (!uploadedFiles.find(f => f.name === file.name && f.size === file.size)) {
+                    uploadedFiles.push({
+                        file: file,
+                        name: file.name,
+                        size: file.size,
+                        status: 'pending'
+                    });
+                }
+            });
+            
+            updateFileList();
+            updateAnalyzeButton();
+        }
+        
+        function updateFileList() {
+            const fileList = document.getElementById('fileList');
+            
+            if (uploadedFiles.length === 0) {
+                fileList.innerHTML = '';
+                return;
+            }
+            
+            fileList.innerHTML = uploadedFiles.map((fileItem, index) => `
+                <div class="file-item">
+                    <div class="file-info">
+                        <span>${fileItem.name}</span>
+                        <span class="file-status ${fileItem.status}">${fileItem.status}</span>
+                    </div>
+                    <button onclick="removeFile(${index})" style="background: none; border: none; color: var(--cicada-sage); cursor: pointer;">×</button>
+                </div>
+            `).join('');
+        }
+        
+        function removeFile(index) {
+            uploadedFiles.splice(index, 1);
+            updateFileList();
+            updateAnalyzeButton();
+        }
+        
+        function clearFiles() {
+            uploadedFiles = [];
+            document.getElementById('fileInput').value = '';
+            updateFileList();
+            updateAnalyzeButton();
+        }
+        
+        function updateAnalyzeButton() {
+            const analyzeButton = document.getElementById('analyzeButton');
+            analyzeButton.disabled = uploadedFiles.length === 0;
+        }
+        
+        async function analyzeWithClaude() {
+            if (uploadedFiles.length === 0) return;
+            
+            const instruction = document.getElementById('instructionInput').value.trim() || 'Analyze this file';
+            const analyzeButton = document.getElementById('analyzeButton');
+            
+            // Disable button during processing
+            analyzeButton.disabled = true;
+            analyzeButton.textContent = '🔄 Processing...';
+            
+            try {
+                // Process files one by one
+                for (let i = 0; i < uploadedFiles.length; i++) {
+                    const fileItem = uploadedFiles[i];
+                    
+                    // Update status
+                    fileItem.status = 'uploading';
+                    updateFileList();
+                    
+                    // Create FormData for multipart upload
+                    const formData = new FormData();
+                    formData.append('file', fileItem.file);
+                    formData.append('instruction', instruction);
+                    formData.append('user_id', 'default');
+                    
+                    try {
+                        fileItem.status = 'processing';
+                        updateFileList();
+                        
+                        const response = await fetch('/claude/upload-and-analyze', {
+                            method: 'POST',
+                            body: formData
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if (result.success) {
+                            fileItem.status = 'complete';
+                            
+                            // Add Claude's response to chat
+                            addMessage(`🤖 Claude Analysis of "${fileItem.name}":\n\n${result.claude_response}`, 'bot');
+                            
+                            // Add cost info if available
+                            if (result.cost_estimate) {
+                                sessionStats.totalCost += result.cost_estimate;
+                                addMessage(`💰 Estimated cost: ${result.cost_estimate.toFixed(4)} | Processing time: ${result.processing_time.toFixed(2)}s`, 'bot');
+                            }
+                            
+                        } else {
+                            fileItem.status = 'error';
+                            addMessage(`❌ Error analyzing "${fileItem.name}": ${result.error_message || 'Unknown error'}`, 'bot');
+                        }
+                        
+                    } catch (error) {
+                        fileItem.status = 'error';
+                        addMessage(`❌ Error processing "${fileItem.name}": ${error.message}`, 'bot');
+                    }
+                    
+                    updateFileList();
+                }
+                
+            } catch (error) {
+                addMessage(`❌ Claude integration error: ${error.message}`, 'bot');
+            } finally {
+                // Re-enable button
+                analyzeButton.disabled = false;
+                analyzeButton.textContent = '🤖 Analyze with Claude';
+                updateAnalyzeButton();
+            }
+        }
+        
+        // Check Claude integration status on load
+        async function checkClaudeStatus() {
+            try {
+                const response = await fetch('/claude/status');
+                const data = await response.json();
+                
+                if (data.claude_file_integration_available && data.anthropic_api_configured) {
+                    console.log('✅ Claude File Integration available');
+                } else {
+                    console.log('⚠️ Claude File Integration not available - ANTHROPIC_API_KEY required');
+                }
+                
+            } catch (error) {
+                console.log('Could not check Claude status:', error);
+            }
+        }
+        
+        // Check Claude status on page load
+        window.addEventListener('load', function() {
+            checkClaudeStatus();
+        });
+    </script>
+</body>
+</html>

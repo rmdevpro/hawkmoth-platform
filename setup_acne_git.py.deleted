@@ -1,0 +1,37 @@
+# Test ACNE Git Self-Setup
+import sys
+import os
+sys.path.append('G:\\Claud\\ACNE-Project')
+
+from git_manager import ACNEGitManager
+
+def main():
+    print("=== ACNE Git Self-Setup Test ===")
+    
+    # Initialize Git Manager
+    try:
+        manager = ACNEGitManager(project_path="G:\\Claud\\ACNE-Project")
+        print("✅ Git Manager initialized")
+        
+        # Test Git access
+        git_test = manager.test_git_access()
+        print(f"Git Status: {git_test}")
+        
+        if git_test['status'] == 'available':
+            print("\n🚀 Running complete Git setup...")
+            setup_result = manager.auto_setup_acne_repository()
+            
+            print(f"\nSetup Status: {setup_result['status']}")
+            for result in setup_result.get('results', []):
+                print(f"  - {result}")
+            
+            if 'repo_url' in setup_result:
+                print(f"\n🎉 ACNE Repository: {setup_result['repo_url']}")
+        else:
+            print("❌ Git not accessible - cannot setup repository")
+            
+    except Exception as e:
+        print(f"❌ Setup failed: {e}")
+
+if __name__ == "__main__":
+    main()

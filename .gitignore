@@ -1,0 +1,57 @@
+# ACNE Project .gitignore
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Test files
+test_*.txt
+test_*.js
+
+# Temporary files
+*.tmp
+*.temp
+
+# Node modules (if any)
+node_modules/
+
+# Build outputs
+dist/
+build/
+
+# Environment variables
+.env.local
+.env.production
+
+# Recovery scripts with tokens
+PUSH_TO_GIT.bat
+SIMPLE_RECOVERY.bat
+WORKING_RECOVERY.bat
+DIRECT_RECOVERY.py
+VERIFIED_RECOVERY.py
+git-recovery/complete_recovery.bat
+FINAL_RECOVERY.bat
+CLEAN_AND_PUSH.bat
+
+# Files with sensitive tokens
+PROJECT_CONTINUATION.md

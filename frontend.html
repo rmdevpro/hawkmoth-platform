@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HAWKMOTH v0.1.0-dev - LLM Teaming Platform</title>
+    <style>
+        :root {
+            /* HAWKMOTH Color Palette - Natural greens from hawkmoth photography */
+            --hawkmoth-deep: #1a2f1a;      /* Deep forest green (almost black) */
+            --hawkmoth-dark: #2d4a2d;      /* Rich dark green */
+            --hawkmoth-medium: #4a6b4a;    /* Medium olive green */
+            --hawkmoth-sage: #6b8b6b;      /* Sage green */
+            --hawkmoth-light: #8db18d;     /* Light green */
+            --hawkmoth-mint: #b8d4b8;      /* Pale mint */
+            --hawkmoth-whisper: #e8f4e8;   /* Very light green */
+            --cost-low: #10b981;           /* Green for low cost */
+            --cost-medium: #f59e0b;        /* Orange for medium cost */
+            --cost-high: #ef4444;          /* Red for high cost */
+        }
+        
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+            background: white;
+            min-height: 100vh;
+            color: var(--hawkmoth-deep);
+            font-size: 14px;
+            line-height: 1.4;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Enhanced Header Bar with LLM Status */
+        .header-bar {
+            height: 50px;
+            background: linear-gradient(135deg, var(--hawkmoth-dark) 0%, var(--hawkmoth-deep) 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            font-weight: 500;
+            font-size: 14px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+        
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .llm-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+        }
+        
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10b981;
+        }
+        
+        .status-indicator.warning {
+            background: #f59e0b;
+        }
+        
+        .status-indicator.error {
+            background: #ef4444;
+        }
+        
+        /* Main Layout Container */
+        .main-layout {
+            flex: 1;
+            display: flex;
+            height: calc(100vh - 50px);
+        }
+        
+        /* Enhanced Navigator Bar */
+        .navigator-bar {
+            width: 32px;
+            background: linear-gradient(180deg, var(--hawkmoth-light) 0%, var(--hawkmoth-mint) 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 12px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 2px 0 4px rgba(0,0,0,0.05);
+            z-index: 90;
+        }
+        
+        .navigator-text {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            color: var(--hawkmoth-deep);
+            font-weight: 600;
+            font-size: 12px;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+        
+        .navigator-separator {
+            width: 16px;
+            height: 1px;
+            background: white;
+            opacity: 0.7;
+        }
+        
+        /* Enhanced Sidebar with LLM Info */
+        .sidebar {
+            width: 0;
+            background: white;
+            border-right: 1px solid var(--hawkmoth-whisper);
+            overflow: hidden;
+            transition: width 0.3s ease;
+            box-shadow: 2px 0 8px rgba(0,0,0,0.1);
+        }
+        
+        .sidebar.expanded {
+            width: 320px;
+        }
+        
+        .sidebar-content {
+            width: 320px;
+            padding: 20px;
+            height: 100%;
+            overflow-y: auto;
+        }
+        
+        .sidebar-header {
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--hawkmoth-dark);
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        /* LLM Status Section */
+        .llm-section {
+            margin-bottom: 20px;
+            border: 1px solid var(--hawkmoth-whisper);
+            border-radius: 8px;
+            padding: 16px;
+            background: var(--hawkmoth-whisper);
+        }
+        
+        .llm-header {
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--hawkmoth-dark);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .model-lane {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            margin: 4px 0;
+            background: white;
+            border-radius: 6px;
+            font-size: 12px;
+        }
+        
+        .model-name {
+            font-weight: 500;
+            color: var(--hawkmoth-dark);
+        }
+        
+        .model-cost {
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+        
+        .cost-free {
+            background: var(--cost-low);
+            color: white;
+        }
+        
+        .cost-low {
+            background: var(--cost-low);
+            color: white;
+        }
+        
+        .cost-medium {
+            background: var(--cost-medium);
+            color: white;
+        }
+        
+        .cost-high {
+            background: var(--cost-high);
+            color: white;
+        }
+        
+        /* Session Info */
+        .session-info {
+            margin-top: 12px;
+            padding: 8px;
+            background: white;
+            border-radius: 6px;
+            font-size: 11px;
+        }
+        
+        .session-stat {
+            display: flex;
+            justify-content: space-between;
+            margin: 2px 0;
+        }
+        
+        .project-section {
+            margin-bottom: 16px;
+            border-bottom: 1px solid var(--hawkmoth-whisper);
+            padding-bottom: 16px;
+        }
+        
+        .project-header {
+            padding: 12px 0;
+            font-weight: 500;
+            font-size: 13px;
+            color: var(--hawkmoth-medium);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: color 0.15s;
+        }
+        
+        .project-header:hover {
+            color: var(--hawkmoth-dark);
+        }
+        
+        .project-content {
+            padding-left: 12px;
+            transition: max-height 0.2s ease-out;
+            overflow: hidden;
+        }
+        
+        .project-content.collapsed {
+            max-height: 0;
+        }
+        
+        .project-content.expanded {
+            max-height: 300px;
+        }
+        
+        .project-item {
+            display: block;
+            padding: 8px 0;
+            text-decoration: none;
+            color: var(--hawkmoth-sage);
+            font-size: 12px;
+            cursor: pointer;
+            transition: color 0.15s;
+        }
+        
+        .project-item:hover {
+            color: var(--hawkmoth-dark);
+        }
+        
+        .project-item.environment-ready {
+            color: var(--hawkmoth-medium);
+            font-weight: 500;
+        }
+        
+        .category-header {
+            padding: 8px 0 4px 0;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--hawkmoth-sage);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Enhanced Chat Area */
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: white;
+            padding: 0;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            padding: 30px 40px;
+            overflow-y: auto;
+            background: white;
+        }
+        
+        .message {
+            margin-bottom: 20px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .user-message {
+            background: var(--hawkmoth-whisper);
+            padding: 16px 20px;
+            border-radius: 12px;
+            margin-left: 80px;
+            font-size: 14px;
+            color: var(--hawkmoth-deep);
+        }
+        
+        .bot-message {
+            background: white;
+            padding: 16px 20px;
+            margin-right: 80px;
+            white-space: pre-wrap;
+            font-size: 14px;
+            color: var(--hawkmoth-deep);
+            line-height: 1.6;
+            position: relative;
+        }
+        
+        /* LLM Response Info */
+        .llm-response-info {
+            margin-top: 12px;
+            padding: 8px 12px;
+            background: var(--hawkmoth-whisper);
+            border-radius: 6px;
+            font-size: 11px;
+            border-left: 3px solid var(--hawkmoth-light);
+        }
+        
+        .response-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 2px 0;
+        }
+        
+        .model-badge {
+            background: var(--hawkmoth-medium);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 500;
+        }
+        
+        /* Input Area */
+        .input-container {
+            padding: 20px 40px 30px;
+            background: white;
+            border-top: 1px solid var(--hawkmoth-whisper);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        
+        #messageInput {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid var(--hawkmoth-whisper);
+            border-radius: 8px;
+            outline: none;
+            font-size: 14px;
+            background: white;
+            color: var(--hawkmoth-deep);
+            transition: border-color 0.2s;
+        }
+        
+        #messageInput:focus {
+            border-color: var(--hawkmoth-light);
+        }
+        
+        #messageInput::placeholder {
+            color: var(--hawkmoth-sage);
+        }
+        
+        /* Enhanced HAWKMOTH Send Button */
+        .hawkmoth-send-button {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--hawkmoth-light);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+        
+        .hawkmoth-send-button:hover {
+            background: var(--hawkmoth-sage);
+        }
+        
+        .hawkmoth-logo {
+            width: 32px;
+            height: 32px;
+            fill: var(--hawkmoth-dark);
+        }
+        
+        .chevron {
+            transition: transform 0.15s ease;
+            color: var(--hawkmoth-sage);
+            font-size: 10px;
+        }
+        
+        .chevron.expanded {
+            transform: rotate(90deg);
+        }
+        
+        .loading {
+            color: var(--hawkmoth-medium);
+            font-style: italic;
+        }
+        
+        /* Status indicators */
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-ready {
+            background: var(--hawkmoth-medium);
+        }
+        
+        .status-create {
+            background: var(--hawkmoth-sage);
+        }
+    </style>
+</head>
+<body>
+    <!-- Enhanced Header Bar with LLM Status -->
+    <div class="header-bar">
+        <div class="header-title">
+            <span>HAWKMOTH v0.1.0-dev - LLM Teaming Platform</span>
+        </div>
+        <div class="llm-status" id="headerLlmStatus">
+            <span class="status-indicator" id="llmStatusIndicator"></span>
+            <span id="llmStatusText">Loading...</span>
+        </div>
+    </div>
+    
+    <!-- Main Layout -->
+    <div class="main-layout">
+        <!-- Navigator Bar -->
+        <div class="navigator-bar" onclick="toggleSidebar()">
+            <div class="navigator-text">Navigator</div>
+            <div class="navigator-separator"></div>
+        </div>
+        
+        <!-- Enhanced Sidebar with LLM Info -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-content">
+                <!-- LLM Teaming Status -->
+                <div class="llm-section">
+                    <div class="llm-header">
+                        🧠 LLM Teaming Status
+                    </div>
+                    <div id="llmModelLanes">
+                        <div class="model-lane">
+                            <span class="model-name">Loading...</span>
+                            <span class="model-cost cost-low">...</span>
+                        </div>
+                    </div>
+                    <div class="session-info" id="sessionInfo">
+                        <div class="session-stat">
+                            <span>Active Sessions:</span>
+                            <span id="activeSessions">0</span>
+                        </div>
+                        <div class="session-stat">
+                            <span>Total Cost:</span>
+                            <span id="totalCost">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="sidebar-header">Projects</div>
+                
+                <!-- HAWKMOTH Project -->
+                <div class="project-section">
+                    <div class="project-header" onclick="toggleProject('hawkmoth')">
+                        <span>HAWKMOTH (Primary)</span>
+                        <span class="chevron expanded" id="hawkmoth-chevron">▶</span>
+                    </div>
+                    <div class="project-content expanded" id="hawkmoth-content">
+                        <div class="category-header">Environments</div>
+                        <a href="#" onclick="handleDevEnvironmentLink(); return false;" class="project-item environment-ready" id="hawkmothDevLink">
+                            <span class="status-dot status-ready"></span>
+                            LLM Teaming v0.1.0-dev (Ready)
+                        </a>
+                        
+                        <div class="category-header">Features</div>
+                        <a href="#" class="project-item">Intelligent Model Routing</a>
+                        <a href="#" class="project-item">Cost Optimization</a>
+                        <a href="#" class="project-item">Sticky Sessions</a>
+                    </div>
+                </div>
+                
+                <!-- Future Projects -->
+                <div class="project-section">
+                    <div class="project-header" onclick="toggleProject('future')">
+                        <span>Advanced Features</span>
+                        <span class="chevron" id="future-chevron">▶</span>
+                    </div>
+                    <div class="project-content collapsed" id="future-content">
+                        <div class="category-header">Coming Soon</div>
+                        <div class="project-item">Enterprise Authentication</div>
+                        <div class="project-item">Analytics Dashboard</div>
+                        <div class="project-item">Custom Model Training</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Chat Area -->
+        <div class="chat-area">
+            <div class="chat-messages" id="chatMessages">
+                <div class="message bot-message">Welcome to HAWKMOTH v0.1.0-dev - LLM Teaming Platform
+
+🦅 **Intelligent Multi-Model Orchestration**
+HAWKMOTH now features advanced LLM Teaming with cost optimization and intelligent routing.
+
+**🧠 LLM Teaming Features:**
+• Intelligent model routing based on query complexity
+• Sticky sessions with context preservation
+• Real-time cost tracking and optimization  
+• 60-80% cost savings vs direct vendor pricing
+
+**🛣️ Available Model Lanes:**
+• Quick Questions: FREE (DeepSeek R1 Free)
+• Development: $1.25/1k (DeepSeek V3)
+• Complex Reasoning: $3/$7/1k (DeepSeek R1)
+• Premium Analysis: $3/$15/1k (Claude Sonnet 4)
+
+**🎯 Try These Commands:**
+• "hawkmoth status" - Check LLM Teaming status
+• "Debug this Python code" - Development lane
+• "What is machine learning?" - Free tier
+• "I need comprehensive analysis" - Premium routing
+
+**Example:** Ask any coding question and watch HAWKMOTH route to the optimal model!</div>
+            </div>
+            
+            <div class="input-container">
+                <input type="text" id="messageInput" placeholder="Try 'Debug my Python code' or 'What is machine learning?'..." />
+                <button class="hawkmoth-send-button" onclick="sendMessage()">
+                    <!-- HAWKMOTH Logo SVG -->
+                    <svg class="hawkmoth-logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <g stroke="currentColor" stroke-width="2" fill="none">
+                            <!-- HAWKMOTH body -->
+                            <ellipse cx="50" cy="45" rx="3" ry="20"/>
+                            <!-- Wings -->
+                            <ellipse cx="42" cy="35" rx="12" ry="8" transform="rotate(-15 42 35)"/>
+                            <ellipse cx="58" cy="35" rx="12" ry="8" transform="rotate(15 58 35)"/>
+                            <ellipse cx="40" cy="42" rx="10" ry="6" transform="rotate(-20 40 42)"/>
+                            <ellipse cx="60" cy="42" rx="10" ry="6" transform="rotate(20 60 42)"/>
+                            <!-- Head -->
+                            <circle cx="50" cy="25" r="4"/>
+                            <!-- Eyes -->
+                            <circle cx="48" cy="23" r="1.5"/>
+                            <circle cx="52" cy="23" r="1.5"/>
+                            <!-- Antennae -->
+                            <path d="M47 20 L45 15"/>
+                            <path d="M53 20 L55 15"/>
+                        </g>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentDevEnvironment = localStorage.getItem('currentDevEnvironment') || null;
+        let openTabs = new Map();
+        let sidebarExpanded = false;
+        let currentSessionId = null;
+        
+        window.addEventListener('load', function() {
+            updateDevEnvironmentLink();
+            loadLlmStatus();
+        });
+        
+        async function loadLlmStatus() {
+            try {
+                const response = await fetch('/llm-status');
+                const data = await response.json();
+                updateLlmStatus(data);
+            } catch (error) {
+                console.error('Failed to load LLM status:', error);
+                updateLlmStatus({ llm_teaming_available: false });
+            }
+        }
+        
+        function updateLlmStatus(data) {
+            const statusIndicator = document.getElementById('llmStatusIndicator');
+            const statusText = document.getElementById('llmStatusText');
+            const modelLanes = document.getElementById('llmModelLanes');
+            const sessionInfo = document.getElementById('sessionInfo');
+            
+            if (data.llm_teaming_available) {
+                statusIndicator.className = 'status-indicator';
+                statusText.textContent = 'LLM Teaming Active';
+                
+                // Update model lanes
+                if (data.model_catalog) {
+                    modelLanes.innerHTML = '';
+                    Object.entries(data.model_catalog).forEach(([name, config]) => {
+                        const costClass = config.cost_input === 0 ? 'cost-free' : 
+                                        config.cost_input < 1 ? 'cost-low' :
+                                        config.cost_input < 5 ? 'cost-medium' : 'cost-high';
+                        
+                        const costText = config.cost_input === 0 ? 'FREE' : 
+                                       `$${config.cost_input}${config.cost_output !== config.cost_input ? '/' + config.cost_output : ''}`;
+                        
+                        modelLanes.innerHTML += `
+                            <div class="model-lane">
+                                <span class="model-name">${config.specialties[0] || 'General'}</span>
+                                <span class="model-cost ${costClass}">${costText}</span>
+                            </div>
+                        `;
+                    });
+                }
+                
+                // Update session info
+                document.getElementById('activeSessions').textContent = data.active_sessions || 0;
+                document.getElementById('totalCost').textContent = `$${(data.total_session_cost || 0).toFixed(4)}`;
+            } else {
+                statusIndicator.className = 'status-indicator warning';
+                statusText.textContent = 'Basic Mode';
+                modelLanes.innerHTML = '<div class="model-lane"><span class="model-name">Basic Chat</span><span class="model-cost cost-free">FREE</span></div>';
+            }
+        }
+        
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebarExpanded = !sidebarExpanded;
+            
+            if (sidebarExpanded) {
+                sidebar.classList.add('expanded');
+            } else {
+                sidebar.classList.remove('expanded');
+            }
+        }
+        
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const messages = document.getElementById('chatMessages');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            addMessage(message, 'user');
+            input.value = '';
+            
+            let loadingMsg = '🤔 Processing...';
+            if (message.includes('debug') || message.includes('code')) {
+                loadingMsg = '💻 Routing to development model...';
+            } else if (message.includes('analysis') || message.includes('comprehensive')) {
+                loadingMsg = '🧠 Routing to premium analysis...';
+            } else if (message.includes('hawkmoth status')) {
+                loadingMsg = '🦅 Checking HAWKMOTH status...';
+            }
+            
+            const loadingDiv = addMessage(loadingMsg, 'bot');
+            loadingDiv.classList.add('loading');
+            
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        message: message, 
+                        user_id: 'default',
+                        session_id: currentSessionId
+                    })
+                });
+                
+                const data = await response.json();
+                loadingDiv.remove();
+                
+                const botMessage = addMessage(data.response, 'bot');
+                
+                // Add LLM response info if available
+                if (data.llm_teaming) {
+                    addLlmResponseInfo(botMessage, data.llm_teaming);
+                    currentSessionId = data.llm_teaming.session_id;
+                }
+                
+                // Refresh LLM status
+                await loadLlmStatus();
+                
+            } catch (error) {
+                loadingDiv.remove();
+                addMessage('❌ Error: Could not connect to server', 'bot');
+            }
+        }
+        
+        function addMessage(text, type) {
+            const messages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}-message`;
+            messageDiv.textContent = text;
+            messages.appendChild(messageDiv);
+            messages.scrollTop = messages.scrollHeight;
+            return messageDiv;
+        }
+        
+        function addLlmResponseInfo(messageDiv, llmData) {
+            if (!llmData) return;
+            
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'llm-response-info';
+            
+            const modelSwitched = llmData.model_switched ? ' 🔄 (Switched)' : '';
+            
+            infoDiv.innerHTML = `
+                <div class="response-meta">
+                    <span>Model: <span class="model-badge">${llmData.model_used}</span>${modelSwitched}</span>
+                    <span>Cost: $${llmData.cost.toFixed(4)}</span>
+                </div>
+                <div class="response-meta">
+                    <span>Lane: ${llmData.session_info?.model_lane || 'Unknown'}</span>
+                    <span>Time: ${llmData.response_time.toFixed(2)}s</span>
+                </div>
+            `;
+            
+            messageDiv.appendChild(infoDiv);
+        }
+        
+        function switchToTab(tabName, url) {
+            const existingTab = openTabs.get(tabName);
+            
+            if (existingTab && !existingTab.closed) {
+                existingTab.focus();
+                console.log(`Switched to existing ${tabName} tab`);
+            } else {
+                const newTab = window.open(url, '_blank');
+                openTabs.set(tabName, newTab);
+                console.log(`Opened new ${tabName} tab`);
+            }
+        }
+        
+        function handleDevEnvironmentLink() {
+            if (currentDevEnvironment) {
+                switchToTab('development', currentDevEnvironment);
+            } else {
+                console.log('Opening current LLM Teaming environment');
+                // Current environment is this same interface with LLM Teaming
+            }
+        }
+        
+        function updateDevEnvironmentLink() {
+            const hawkmothDevLink = document.getElementById('hawkmothDevLink');
+            if (hawkmothDevLink) {
+                hawkmothDevLink.innerHTML = '<span class="status-dot status-ready"></span>LLM Teaming v0.1.0-dev (Ready)';
+            }
+        }
+        
+        function toggleProject(projectId) {
+            const content = document.getElementById(projectId + '-content');
+            const chevron = document.getElementById(projectId + '-chevron');
+            
+            if (content.classList.contains('collapsed')) {
+                content.classList.remove('collapsed');
+                content.classList.add('expanded');
+                chevron.classList.add('expanded');
+            } else {
+                content.classList.remove('expanded');
+                content.classList.add('collapsed');
+                chevron.classList.remove('expanded');
+            }
+        }
+        
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        // Refresh LLM status every 30 seconds
+        setInterval(loadLlmStatus, 30000);
+    </script>
+</body>
+</html>

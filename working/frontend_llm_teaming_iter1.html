@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HAWKMOTH v0.1.0-dev - LLM Teaming Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2d5a27 0%, #1a3e1a 100%);
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .header .subtitle {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-top: 0.25rem;
+        }
+
+        .main-container {
+            display: flex;
+            flex: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            gap: 1rem;
+            padding: 1rem;
+        }
+
+        .sidebar {
+            width: 300px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            height: fit-content;
+        }
+
+        .sidebar h3 {
+            color: #2d5a27;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .info-section {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .info-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .info-label {
+            color: #666;
+        }
+
+        .info-value {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+
+        .status-active { background: #4CAF50; }
+        .status-warning { background: #FF9800; }
+        .status-error { background: #F44336; }
+
+        .chat-container {
+            flex: 1;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .welcome-section {
+            background: linear-gradient(135deg, #e8f5e8 0%, #d4edda 100%);
+            padding: 2rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .welcome-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #2d5a27;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .welcome-title::before {
+            content: "🦅";
+            margin-right: 0.5rem;
+            font-size: 1.2em;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .feature-card {
+            background: rgba(255,255,255,0.7);
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .feature-title {
+            font-weight: 600;
+            color: #2d5a27;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-description {
+            font-size: 0.9rem;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        .messages {
+            flex: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            max-height: 500px;
+        }
+
+        .message {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border-radius: 12px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+
+        .user-message {
+            background: #e8f5e8;
+            margin-left: auto;
+            border-bottom-right-radius: 4px;
+        }
+
+        .bot-message {
+            background: #f8f9fa;
+            margin-right: auto;
+            border-bottom-left-radius: 4px;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .routing-info {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        .routing-header {
+            font-weight: 600;
+            color: #1976d2;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .routing-header::before {
+            content: "🧠";
+            margin-right: 0.5rem;
+        }
+
+        .routing-details {
+            color: #555;
+            line-height: 1.4;
+        }
+
+        .input-container {
+            padding: 1rem;
+            border-top: 1px solid #e9ecef;
+            background: #fafafa;
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 0.75rem;
+            align-items: flex-end;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e9ecef;
+            border-radius: 25px;
+            font-size: 1rem;
+            resize: none;
+            max-height: 120px;
+            min-height: 44px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        .message-input:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        .send-button {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+            flex-shrink: 0;
+        }
+
+        .send-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        }
+
+        .send-button:active {
+            transform: translateY(0);
+        }
+
+        .loading {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        .loading-spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4CAF50;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .cost-indicator {
+            color: #666;
+            font-size: 0.8rem;
+            margin-top: 0.25rem;
+        }
+
+        .llm-tag {
+            display: inline-block;
+            background: #4CAF50;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-right: 0.5rem;
+        }
+
+        .llm-claude { background: #8B5CF6; }
+        .llm-gpt4 { background: #10B981; }
+        .llm-router { background: #F59E0B; }
+        .llm-hawkmoth { background: #4CAF50; }
+
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                order: 2;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>HAWKMOTH v0.1.0-dev - Development Platform</h1>
+        <div class="subtitle">LLM Teaming • Intelligent Routing • Precision Development</div>
+    </header>
+
+    <div class="main-container">
+        <aside class="sidebar">
+            <h3>🧠 LLM Routing System</h3>
+            
+            <div class="info-section">
+                <div class="info-item">
+                    <span class="info-label">Status:</span>
+                    <span class="info-value">
+                        <span class="status-indicator status-active"></span>Active
+                    </span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Queries Routed:</span>
+                    <span class="info-value" id="total-queries">0</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Total Cost:</span>
+                    <span class="info-value" id="total-cost">$0.000</span>
+                </div>
+            </div>
+
+            <h3>🎯 Available LLMs</h3>
+            
+            <div class="info-section">
+                <div class="info-item">
+                    <span class="info-label">
+                        <span class="status-indicator status-active"></span>HAWKMOTH
+                    </span>
+                    <span class="info-value">Local</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">
+                        <span class="status-indicator status-warning"></span>Claude
+                    </span>
+                    <span class="info-value">API</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">
+                        <span class="status-indicator status-warning"></span>GPT-4
+                    </span>
+                    <span class="info-value">API</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">
+                        <span class="status-indicator status-warning"></span>Together AI
+                    </span>
+                    <span class="info-value">API</span>
+                </div>
+            </div>
+
+            <h3>⚙️ Platform Status</h3>
+            
+            <div class="info-section">
+                <div class="info-item">
+                    <span class="info-label">Git Integration:</span>
+                    <span class="info-value" id="git-status">Checking...</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">HuggingFace API:</span>
+                    <span class="info-value" id="hf-status">Checking...</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Version:</span>
+                    <span class="info-value">v0.1.0-dev</span>
+                </div>
+            </div>
+        </aside>
+
+        <main class="chat-container">
+            <section class="welcome-section">
+                <h2 class="welcome-title">Platform Foundation</h2>
+                <p>HAWKMOTH is emerging as a professional development platform, inspired by the precision and focus of hawkmoths.</p>
+                
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="feature-title">🧠 LLM Teaming</div>
+                        <div class="feature-description">Intelligent routing to specialized AI models for optimal query handling</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">🚀 Repository Deployment</div>
+                        <div class="feature-description">Paste any GitHub URL for instant analysis and deployment</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">⚙️ Self-Management</div>
+                        <div class="feature-description">Platform can update and improve itself autonomously</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">💰 Cost Optimization</div>
+                        <div class="feature-description">Efficient routing minimizes API costs while maximizing quality</div>
+                    </div>
+                </div>
+
+                <p style="margin-top: 1rem; font-size: 0.9rem; color: #666;">
+                    <strong>Available Commands:</strong><br>
+                    • <code>hawkmoth status</code> - Check Git system availability<br>
+                    • <code>routing status</code> - View LLM routing statistics<br>
+                    • <code>commit hawkmoth</code> - Execute platform self-update<br>
+                    • <code>improve hawkmoth</code> - Create development environment<br>
+                    • Paste GitHub URLs for instant analysis and deployment<br>
+                    • Example: https://github.com/streamlit/streamlit-example
+                </p>
+            </section>
+
+            <div class="messages" id="messages"></div>
+
+            <div class="loading" id="loading">
+                <div class="loading-spinner"></div>
+            </div>
+
+            <div class="input-container">
+                <div class="input-wrapper">
+                    <textarea 
+                        id="messageInput" 
+                        class="message-input" 
+                        placeholder="Try 'hawkmoth status' or paste a GitHub URL..."
+                        rows="1"
+                    ></textarea>
+                    <button id="sendButton" class="send-button" title="Send message">
+                        🦅
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const messagesContainer = document.getElementById('messages');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        const loading = document.getElementById('loading');
+
+        // Auto-resize textarea
+        messageInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = this.scrollHeight + 'px';
+        });
+
+        // Send message on Enter (Shift+Enter for new line)
+        messageInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        sendButton.addEventListener('click', sendMessage);
+
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            // Add user message to chat
+            addMessage(message, 'user');
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+
+            // Show loading
+            loading.style.display = 'flex';
+            sendButton.disabled = true;
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        user_id: 'default'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    addMessage(data.response, 'bot', data.routing_info);
+                    updateRoutingStats();
+                } else {
+                    addMessage('Error: ' + data.response, 'bot');
+                }
+            } catch (error) {
+                addMessage('Connection error: ' + error.message, 'bot');
+            }
+
+            // Hide loading
+            loading.style.display = 'none';
+            sendButton.disabled = false;
+            messageInput.focus();
+        }
+
+        function addMessage(content, sender, routingInfo = null) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            
+            // Format message content
+            let formattedContent = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            formattedContent = formattedContent.replace(/`(.*?)`/g, '<code style="background: rgba(0,0,0,0.1); padding: 0.2rem 0.4rem; border-radius: 4px; font-family: monospace;">$1</code>');
+            formattedContent = formattedContent.replace(/\n/g, '<br>');
+            
+            messageDiv.innerHTML = formattedContent;
+
+            // Add routing information for bot messages
+            if (sender === 'bot' && routingInfo) {
+                const routingDiv = document.createElement('div');
+                routingDiv.className = 'routing-info';
+                
+                const llmTag = `<span class="llm-tag llm-${routingInfo.target_llm.toLowerCase()}">${routingInfo.target_llm}</span>`;
+                
+                routingDiv.innerHTML = `
+                    <div class="routing-header">Routing Decision</div>
+                    <div class="routing-details">
+                        ${llmTag}
+                        <strong>Confidence:</strong> ${(routingInfo.confidence * 100).toFixed(1)}% • 
+                        <strong>Reason:</strong> ${routingInfo.reason}
+                        <div class="cost-indicator">
+                            Estimated cost: $${routingInfo.estimated_cost.toFixed(3)}/1k tokens • 
+                            Complexity: ${routingInfo.complexity}
+                        </div>
+                    </div>
+                `;
+                
+                messageDiv.appendChild(routingDiv);
+            }
+
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        async function updateRoutingStats() {
+            try {
+                const response = await fetch('/routing/status');
+                const data = await response.json();
+                
+                document.getElementById('total-queries').textContent = data.total_queries || 0;
+                document.getElementById('total-cost').textContent = `$${(data.total_cost || 0).toFixed(3)}`;
+            } catch (error) {
+                console.log('Could not update routing stats:', error);
+            }
+        }
+
+        async function updateSystemStatus() {
+            try {
+                const response = await fetch('/health');
+                const data = await response.json();
+                
+                document.getElementById('git-status').innerHTML = data.git_available ? 
+                    '<span class="status-indicator status-active"></span>Available' : 
+                    '<span class="status-indicator status-error"></span>Unavailable';
+                    
+                document.getElementById('hf-status').innerHTML = data.hf_api_available ? 
+                    '<span class="status-indicator status-active"></span>Configured' : 
+                    '<span class="status-indicator status-warning"></span>Not configured';
+            } catch (error) {
+                console.log('Could not update system status:', error);
+            }
+        }
+
+        // Initialize status on page load
+        updateSystemStatus();
+        updateRoutingStats();
+
+        // Add welcome message
+        setTimeout(() => {
+            addMessage("👋 Hi! Share a GitHub repository URL and I'll analyze and deploy it!", 'bot');
+        }, 500);
+    </script>
+</body>
+</html>

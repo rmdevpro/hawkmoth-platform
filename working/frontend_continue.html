@@ -1,0 +1,198 @@
+Ready for complete development workflow</div>
+                    </div>
+                    
+                    <div class="input-container">
+                        <input type="text" id="messageInput" placeholder="Try 'create project my-app' or upload files via sidebar..." />
+                        <button class="hawkmoth-send-button" onclick="sendMessage()">
+                            <svg class="hawkmoth-logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                                <g stroke="currentColor" stroke-width="2" fill="none">
+                                    <ellipse cx="50" cy="45" rx="3" ry="20"/>
+                                    <ellipse cx="42" cy="35" rx="12" ry="8" transform="rotate(-15 42 35)"/>
+                                    <ellipse cx="58" cy="35" rx="12" ry="8" transform="rotate(15 58 35)"/>
+                                    <ellipse cx="40" cy="42" rx="10" ry="6" transform="rotate(-20 40 42)"/>
+                                    <ellipse cx="60" cy="42" rx="10" ry="6" transform="rotate(20 60 42)"/>
+                                    <circle cx="50" cy="25" r="4"/>
+                                    <circle cx="48" cy="23" r="1.5"/>
+                                    <circle cx="52" cy="23" r="1.5"/>
+                                    <path d="M47 20 L45 15"/>
+                                    <path d="M53 20 L55 15"/>
+                                </g>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- File Manager Tab -->
+            <div class="tab-content" id="filesTab">
+                <div class="file-management">
+                    <div class="management-header">
+                        <div class="management-title">File Management</div>
+                        <div class="management-actions">
+                            <button class="action-btn" onclick="refreshFiles()">🔄 Refresh</button>
+                            <button class="action-btn" onclick="document.getElementById('fileInput').click()">📁 Upload</button>
+                        </div>
+                    </div>
+                    
+                    <div class="file-grid" id="fileGrid">
+                        <div class="loading">Loading files...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Workspace Modal -->
+    <div class="modal" id="createWorkspaceModal">
+        <div class="modal-content">
+            <div class="modal-header">Create New Workspace</div>
+            <input type="text" class="modal-input" id="workspaceNameInput" placeholder="Enter workspace name...">
+            <input type="text" class="modal-input" id="workspaceDescInput" placeholder="Enter description (optional)...">
+            <div class="modal-actions">
+                <button class="modal-btn secondary" onclick="hideCreateWorkspaceModal()">Cancel</button>
+                <button class="modal-btn primary" onclick="createWorkspace()">Create</button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .file-management {
+            flex: 1;
+            padding: 30px 40px;
+            overflow-y: auto;
+            background: white;
+        }
+        
+        .management-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--hawkmoth-whisper);
+        }
+        
+        .management-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--hawkmoth-dark);
+        }
+        
+        .management-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .action-btn {
+            padding: 8px 16px;
+            background: var(--hawkmoth-light);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: background 0.15s;
+        }
+        
+        .action-btn:hover {
+            background: var(--hawkmoth-medium);
+        }
+        
+        .file-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 16px;
+            margin-top: 20px;
+        }
+        
+        .file-card {
+            border: 1px solid var(--hawkmoth-whisper);
+            border-radius: 8px;
+            padding: 16px;
+            background: white;
+            transition: all 0.15s;
+            cursor: pointer;
+        }
+        
+        .file-card:hover {
+            border-color: var(--hawkmoth-light);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .file-card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .file-card-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+            margin-right: 12px;
+        }
+        
+        .file-card-name {
+            flex: 1;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--hawkmoth-dark);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .file-card-meta {
+            font-size: 11px;
+            color: var(--hawkmoth-sage);
+            margin-bottom: 8px;
+        }
+        
+        .file-card-storage {
+            display: inline-block;
+            padding: 2px 6px;
+            background: var(--hawkmoth-whisper);
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 500;
+            color: var(--hawkmoth-medium);
+        }
+        
+        .llm-response-info {
+            margin-top: 12px;
+            padding: 8px 12px;
+            background: var(--hawkmoth-whisper);
+            border-radius: 6px;
+            font-size: 11px;
+            border-left: 3px solid var(--hawkmoth-light);
+        }
+        
+        .response-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 2px 0;
+        }
+        
+        .model-badge {
+            background: var(--hawkmoth-medium);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 500;
+        }
+    </style>
+
+    <script>
+        // Script content will continue in next part...
+    </script>
+</body>
+</html>
