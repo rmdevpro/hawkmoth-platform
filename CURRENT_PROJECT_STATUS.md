@@ -22,7 +22,7 @@
 ### **Critical Discovery: MCP Tool Architectural Limitation**
 **Issue**: Windows-MCP PowerShell tool cannot capture stdout from external executables
 **Impact**: Affects all external programs (git.exe, ssh.exe, etc.) regardless of admin privileges
-**Solution**: Documented in WAYS_OF_WORKING.md with silent batch file workarounds
+**Solution**: Documented in G:\Claud\WAYS_OF_WORKING.md with silent batch file workarounds
 
 ## 🎯 IMMEDIATE NEXT SESSION PRIORITIES
 
@@ -96,7 +96,7 @@ G:\Claud\HAWKMOTH-Project\
 1. **Systematic Approach**: Followed proper Git installation and SSH key generation
 2. **Problem Identification**: Discovered and documented MCP tool architectural limitation
 3. **Admin Testing**: Confirmed limitation is not permissions-based
-4. **Documentation**: Updated WAYS_OF_WORKING.md with findings for future sessions
+4. **Documentation**: Updated G:\Claud\WAYS_OF_WORKING.md with findings for future sessions
 5. **Infrastructure Complete**: All components ready for manual Git operations
 
 ### **Key Innovations:**
