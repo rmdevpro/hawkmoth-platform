@@ -38,7 +38,7 @@
 2. **Navigate to project directory**: `cd "G:\Claud\HAWKMOTH-Project"`
 3. **Test SSH connection**: `ssh -T git@github.com`
 4. **Stage all files**: `git add .`
-5. **Create commit**: `git commit -m "HAWKMOTH v0.0.4-enhanced - Complete platform backup"`
+5. **Create commit**: `git commit -m "HAWKMOTH v0.0.4a - Complete platform backup"`
 6. **Push to GitHub**: `git push origin main`
 7. **Verify repository backup**: Check GitHub web interface
 
@@ -125,4 +125,4 @@ G:\Claud\HAWKMOTH-Project\
 **Risk Level:** MODERATE (reduced from HIGH)
 **Next Priority:** Complete repository backup via manual Git operations
 
-*HAWKMOTH v0.0.4-enhanced - Git Infrastructure: COMPLETE ✅ - Repository Backup: READY FOR MANUAL OPERATIONS*
+*HAWKMOTH v0.0.4a - Git Infrastructure: COMPLETE ✅ - Repository Backup: READY FOR MANUAL OPERATIONS*

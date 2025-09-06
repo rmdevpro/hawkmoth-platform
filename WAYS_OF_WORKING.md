@@ -80,10 +80,11 @@ When transitioning between chat sessions, use this simplified template:
 
 ### **Version Control**
 ```
-v0.1.0-dev  → Development/Testing
-v0.1.0      → LLM Teaming Stable
-v0.1.1      → Enhanced Features
-v0.2.0      → Enterprise Foundation
+v0.1.1      → Feature/patch 1
+v0.1.1a     → Sub-commit to feature 1
+v0.1.2      → Feature/patch 2
+v0.1.2a     → Sub-commit to feature 2
+v0.2.1      → Major milestone feature 1
 ```
 
 ---

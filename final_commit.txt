@@ -1,0 +1,10 @@
+[main f365f91] Update WAYS_OF_WORKING.md - Git SSH authentication fully functional
+ 5 files changed, 101 insertions(+), 8 deletions(-)
+ create mode 100644 commit_ssh_clean.bat
+ create mode 100644 git_clean_commit.txt
+ create mode 100644 git_push_result.txt
+ create mode 100644 git_status_result.txt
+Git commit exit code: 0 
+To github.com:rmdevpro/hawkmoth-platform.git
+   1345326..f365f91  main -> main
+Git push exit code: 0 

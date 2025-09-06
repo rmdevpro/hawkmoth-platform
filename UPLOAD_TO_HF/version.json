@@ -1,6 +1,6 @@
 {
     "platform": "HAWKMOTH",
-    "version": "v0.0.4-enhanced",
+    "version": "v0.0.4a",
     "release_date": "2025-09-06",
     "component_status": "Component 4: Enhanced Model Variety COMPLETE",
     "description": "Enhanced LLM Teaming Platform with Full Model Variety Support",
@@ -100,7 +100,7 @@
         "ready_for_testing": true
     },
     "changelog": {
-        "v0.0.4-enhanced": [
+        "v0.0.4a": [
             "Added 10+ AI model support with natural language switching",
             "Implemented cost optimization and model recommendations", 
             "Enhanced conversation manager with full model variety",
