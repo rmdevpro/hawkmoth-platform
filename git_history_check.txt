@@ -1,0 +1,19 @@
+9acb6ae Remove files containing exposed tokens - SSH setup complete
+29dbc5e SSH authentication setup and Git workflow restoration
+a9cef3c HAWKMOTH v0.0.4-enhanced - Clean repository
+On branch main
+Your branch is ahead of 'origin/main' by 2 commits.
+  (use "git push" to publish your local commits)
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   CLEAN_HISTORY.bat
+	modified:   clean_commit.txt
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	check_history.bat
+	git_history_check.txt
+
+no changes added to commit (use "git add" and/or "git commit -a")
